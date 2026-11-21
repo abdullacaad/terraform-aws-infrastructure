@@ -1,0 +1,17 @@
+# Dynamic inventory — alternative to the generated inventory.ini.
+# Use this when you want Ansible to discover EC2 instances itself
+# (needs amazon.aws collection: ansible-galaxy collection install amazon.aws).
+# Usage: ansible-playbook -i inventory.aws_ec2.yml playbook.yml
+plugin: amazon.aws.aws_ec2
+regions:
+  - us-east-1
+filters:
+  tag:Project: terraform-infra
+  instance-state-name: running
+keyed_groups:
+  - key: tags.Role
+    prefix: role
+hostnames:
+  - public-ip-address
+compose:
+  ansible_user: "'ubuntu'"
