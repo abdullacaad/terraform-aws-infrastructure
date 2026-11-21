@@ -1,0 +1,21 @@
+# Terraform state & secrets — never commit these
+*.tfstate
+*.tfstate.*
+*.tfplan
+terraform.tfvars
+**/.terraform/
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ansible generated inventory + keys
+ansible/inventory.ini
+*.pem
+*.key
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

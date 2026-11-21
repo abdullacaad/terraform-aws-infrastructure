@@ -1,0 +1,20 @@
+# LocalStack — a fake AWS on your laptop. No AWS account, no card, no bill.
+# Requires Docker Desktop (Windows/Mac) or Docker Engine (Linux).
+#   https://docs.docker.com/get-docker/
+#
+# Start:  docker compose up -d
+# Stop:   docker compose down
+# Logs:   docker compose logs -f localstack
+services:
+  localstack:
+    image: localstack/localstack:3.8
+    container_name: terraform-localstack
+    ports:
+      - "4566:4566" # LocalStack edge port — all AWS services go here
+    environment:
+      # Only the services this project uses — keeps startup fast and light.
+      - SERVICES=ec2
+      - DEBUG=0
+      - PERSISTENCE=0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock

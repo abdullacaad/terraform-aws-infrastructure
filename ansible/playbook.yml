@@ -1,0 +1,61 @@
+---
+# Provision the web servers Terraform created:
+# Nginx + Docker, a demo page, and a health check.
+# Run:  cd ansible && ansible-playbook playbook.yml
+# Or from the root:  make configure
+- name: Provision web servers
+  hosts: webservers
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Update apt cache
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install Nginx and Docker
+      ansible.builtin.apt:
+        name:
+          - nginx
+          - docker.io
+        state: present
+
+    - name: Ensure Nginx and Docker are running and enabled
+      ansible.builtin.service:
+        name: "{{ item }}"
+        state: started
+        enabled: true
+      loop:
+        - nginx
+        - docker
+
+    - name: Deploy demo page
+      ansible.builtin.copy:
+        dest: /var/www/html/index.html
+        mode: "0644"
+        content: |
+          <html><head><title>Terraform Infra</title></head>
+          <body style="font-family:sans-serif;max-width:640px;margin:4rem auto">
+          <h1>It works — provisioned by Terraform + Ansible</h1>
+          <p>Host: {{ inventory_hostname }} ({{ ansible_hostname }})</p>
+          <p>OS: {{ ansible_distribution }} {{ ansible_distribution_version }}</p>
+          <p>Deployed with: Terraform (VPC, EC2, Security Groups) + Ansible (Nginx, Docker)</p>
+          </body></html>
+      notify: Reload Nginx
+
+    - name: Check Nginx responds locally
+      ansible.builtin.uri:
+        url: http://localhost/
+        status_code: 200
+      register: nginx_check
+
+    - name: Show result
+      ansible.builtin.debug:
+        msg: "Nginx OK on {{ inventory_hostname }} — HTTP {{ nginx_check.status }}"
+
+  handlers:
+    - name: Reload Nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded
